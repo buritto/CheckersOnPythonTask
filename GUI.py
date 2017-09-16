@@ -4,6 +4,7 @@ import checkersException
 from functools import partial
 from tkinter import messagebox
 import bot
+import time
 
 
 class Advanced_Button(Button):
@@ -19,12 +20,12 @@ class Basic_Users_interface():
     def check_winner(self):
         res = self.game.initialize_win()
         if res != None:
-            self.bot.bod_mode = False;
             if res == 'first':
                 messagebox.showinfo('Message', 'Rad win')
             else:
                 messagebox.showinfo('Message', 'Blue win')
-            self.root.quit()
+            return True
+        return False
 
     def take_chip(self, x, y):
         try:
@@ -39,28 +40,36 @@ class Basic_Users_interface():
             messagebox.showinfo('Error', 'Your move is not completed ')
             return
 
+
     def make_jump(self, x, y):
         try:
             if self.progress % 2 == 1:
-                result_jump = self.game.first_player.make_jump(x, y)
+                result_jump = self.game.first_player.make_jump(x, y, self.game.first_player.party)
                 self.progress += result_jump
             else:
-                result_jump = self.game.second_player.make_jump(x, y)
-                print(result_jump)
+                result_jump = self.game.second_player.make_jump(x, y, self.game.second_player.party)
                 self.progress += result_jump
-            self.check_winner()
         except checkersException.InvalidJump:
             messagebox.showinfo('Error', 'Wrong move')
             return
         except checkersException.InvalidJumpAttack:
             messagebox.showinfo('Error', 'You need attack enemy')
             return
+        self.draw()
+        if self.check_winner():
+            self.root.destroy()
+            main()
+            return
+
         if result_jump != 0 and self.human != None and self.bot.bot_mode == True:
             try:
                 self.progress += self.bot.bot_do()
+                self.draw()
             except ValueError:
-                self.check_winner()
-        self.draw()
+                if self.check_winner():
+                    self.root.destroy()
+                    main()
+                    return
 
     def draw(self):
         for x in range(0, 10):
@@ -110,9 +119,7 @@ class Basic_Users_interface():
                 self.bot = bot.Bot(self.second_player)
             else:
                 self.bot = bot.Bot(self.first_player)
-                print('before', self.progress)
                 self.progress += self.bot.bot_do()
-                print('after', self.progress)
         self.draw()
 
         for x in range(0, 10):
@@ -155,7 +162,7 @@ class GameMenu():
         self.clear_form(root)
         take_mode_single = Button(root, text='Single mode', width=10, height=3, command=partial(self.take_party, root))
         take_mode_coop = Button(root, text='Coop mode', width=10, height=3, command=partial(self.start_game, None, root))
-        quit = Button(root, text='Quit', width=10, height=3, command=lambda: self.root.quit())
+        quit = Button(root, text='Quit', width=10, height=3, command=lambda: self.root.destroy())
         canvas = Canvas(height=200, width=300)
         img = PhotoImage(file='image/main.gif')
         self.list_image.append(img)
@@ -165,9 +172,12 @@ class GameMenu():
         quit.grid(row=2, pady=10, padx=8)
         canvas.grid(row=0, rowspan=3, column=1, padx=8)
 
-if __name__=="__main__":
+def main():
     mode = ''
     root = Tk()
     menu = GameMenu(root)
     root.mainloop()
+
+if __name__=="__main__":
+    main()
 

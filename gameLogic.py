@@ -128,7 +128,7 @@ class Player():
          if chip.party == 'black' and chip.pos_x == 0:
              chip.is_king = True
 
-    def make_jump(self, pos_x, pos_y):
+    def make_jump(self, pos_x, pos_y, party):
         if len(self.chips_for_fight) > 0:
             if len(self.active_chip.chips_for_fight) != 0 and self.active_chip in self.chips_for_fight:
                 if ((pos_x, pos_y) in self.active_chip.chips_for_fight.keys()):
@@ -140,9 +140,14 @@ class Player():
             else:
                 raise exc.InvalidJumpAttack
         is_correct_jump = self.is_correctness_coord(pos_x,  pos_y)
-        if (abs(self.active_chip.pos_x - pos_x) + abs(self.active_chip.pos_y - pos_y)) == 2 and is_correct_jump:
-            return self.do_jump(pos_x, pos_y, 'run')
         if (abs(self.active_chip.pos_x - pos_x) + abs(self.active_chip.pos_y - pos_y)) % 2 == 0 and is_correct_jump and self.field[self.active_chip.pos_x][self.active_chip.pos_y].is_king:
+            return self.do_jump(pos_x, pos_y, 'run')
+
+        if (party == 'white'):
+                is_correct_jump = is_correct_jump and pos_x > self.active_chip.pos_x
+        else:
+            is_correct_jump = is_correct_jump and pos_x < self.active_chip.pos_x
+        if (abs(self.active_chip.pos_x - pos_x) + abs(self.active_chip.pos_y - pos_y)) == 2 and is_correct_jump:
             return self.do_jump(pos_x, pos_y, 'run')
         else:
             raise exc.InvalidJump
