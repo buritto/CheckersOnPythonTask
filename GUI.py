@@ -21,9 +21,9 @@ class Basic_Users_interface():
         res = self.game.initialize_win()
         if res != None:
             if res == 'first':
-                messagebox.showinfo('Message', 'Rad win')
+                messagebox.showinfo('Message', 'Red won')
             else:
-                messagebox.showinfo('Message', 'Blue win')
+                messagebox.showinfo('Message', 'Blue won')
             return True
         return False
 
@@ -34,7 +34,7 @@ class Basic_Users_interface():
             else:
                 self.game.second_player.take_chip(x, y)
         except checkersException.InvalidTakeChipsException:
-            messagebox.showinfo('Error', 'The wrong chip is taken')
+            messagebox.showinfo('Error', 'Wrong checker is taken')
             return
         except checkersException.InvalidEndJump:
             messagebox.showinfo('Error', 'Your move is not completed ')
@@ -53,7 +53,7 @@ class Basic_Users_interface():
             messagebox.showinfo('Error', 'Wrong move')
             return
         except checkersException.InvalidJumpAttack:
-            messagebox.showinfo('Error', 'You need attack enemy')
+            messagebox.showinfo('Error', 'You must attack your enemy')
             return
         self.draw()
         if self.check_winner():
