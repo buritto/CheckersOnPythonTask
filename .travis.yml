@@ -1,0 +1,15 @@
+language: python
+
+python:
+  - "3.4"
+
+install:
+  - pip install -r ci_requirements.txt
+
+script:
+  - py.test
+  - py.test --flake8
+  - py.test --cov=suffix_prefix
+
+after_success:
+  - coveralls
