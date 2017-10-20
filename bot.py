@@ -23,7 +23,7 @@ class Bot():
     def find_target(self):
         x = -1
         if (self.player.party == 'white'):
-            x = 1;
+            x = 1
         target_is_find = False
         set_coord = []
         while not target_is_find:

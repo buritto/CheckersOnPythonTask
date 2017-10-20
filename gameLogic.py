@@ -1,9 +1,10 @@
 import checkersException as exc
+import random
 
 
 class Chip:
 
-    def __init__(self, pos_x, pos_y, enemy_party, player):
+    def __init__(self, pos_x, pos_y, enemy_party, player,  is_unusual):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.party = player.party
@@ -11,6 +12,9 @@ class Chip:
         self.chips_for_fight = {}
         self.my_lord = player
         self.is_king = False
+        self.unusual_checker =  is_unusual
+        if is_unusual:
+            self.count  = 1
 
 
 class Player():
@@ -130,6 +134,8 @@ class Player():
         enemy.my_lord.player_chips.remove(enemy)
         self.field[enemy.pos_x][enemy.pos_y] = 0
 
+
+
     def do_jump(self, pos_x, pos_y, operation):
         self.field[pos_x][pos_y] = self.active_chip
         self.field[self.active_chip.pos_x][self.active_chip.pos_y] = 0
@@ -213,7 +219,10 @@ class PlayingField():
     def put_chips(self, start_x, finish_x, start_y, finish_y, enemy_party, player):
         for x in range(start_x, finish_x, 2):
             for y in range(start_y, finish_y, 2):
-                new_chip = Chip(x, y, enemy_party, player)
+                is_unusual = False
+                if random.randint(1, 10000) % 5 == 0:
+                    is_unusual = True
+                new_chip = Chip(x, y, enemy_party, player, is_unusual)
                 self.field[x][y] = new_chip
                 player.player_chips.append(new_chip)
 
@@ -222,12 +231,21 @@ class PlayingField():
         self.second_player = Player('black', self.field)
         for x in range(0, dimension):
             for y in range(0, dimension):
-                if field[x][y] == '1':
-                    new_chip = Chip(x, y, 'black', self.first_player)
+                #is_unusual = False
+                #if random.randint(1, 10000) % 5 == 0:
+                    #is_unusual = True
+                if field[x][y] == '1' or field[x][y] == '3':
+                    is_unusual = False
+                    if field[x][y] == '1':
+                        is_unusual = True
+                    new_chip = Chip(x, y, 'black', self.first_player, is_unusual)
                     self.field[x][y] = new_chip
                     self.first_player.player_chips.append(new_chip)
-                if field[x][y] == '2':
-                    new_chip = Chip(x, y, 'white', self.second_player)
+                if field[x][y] == '2' or field[x][y] == '4':
+                    is_unusual = False
+                    if field[x][y] == '4':
+                        is_unusual = True
+                    new_chip = Chip(x, y, 'white', self.second_player, is_unusual)
                     self.field[x][y] = new_chip
                     self.second_player.player_chips.append(new_chip)
 

@@ -53,15 +53,42 @@ class Basic_Users_interface():
             return
 
 
+    def change_parties(self, player):
+        if player.active_chip.unusual_checker:
+            if player.active_chip.count > 0:
+                player.active_chip.count -= 1
+            else:
+                 messagebox.showinfo("New message", 'Change party !!!!!!')
+                 player.active_chip.count = 5
+                 if self.is_with_bot:
+                     save_party = self.game.second_player
+                     if self.human == 'white':
+                         save_party = self.game.first_player
+                         self.game.first_player = self.bot.player
+                         self.bot.player = save_party
+                         self.log.save_change_party('second')
+                         return
+                     save_party = self.game.second_player
+                     self.game.second_player = self.bot.player
+                     self.bot.player = save_party
+                     self.log.save_change_party('first')
+                     return
+                 new_party = self.game.second_player
+                 self.game.second_player = self.game.first_player
+                 self.game.first_player = new_party
+
+
     def make_jump(self, x, y):
         try:
             if self.progress % 2 == 1:
                 result_jump = self.game.first_player.make_jump(x, y, self.game.first_player.party)
                 self.progress += result_jump
+                self.change_parties(self.game.first_player)
             else:
                 result_jump = self.game.second_player.make_jump(x, y, self.game.second_player.party)
                 self.progress += result_jump
                 self.draw_correct_move(self.second_player)
+                self.change_parties(self.game.second_player)
             self.log.change_fild_text(self.dimension, self.game.field)
         except checkersException.InvalidJump:
             messagebox.showerror('Error', 'Wrong move')
@@ -82,6 +109,7 @@ class Basic_Users_interface():
 
         if result_jump != 0 and self.human != None and self.bot.bot_mode == True:
             self.progress += self.bot.bot_do()
+            self.change_parties(self.bot.player)
             self.log.change_fild_text(self.dimension, self.game.field)
             self.draw()
             if self.check_winner():
@@ -119,7 +147,7 @@ class Basic_Users_interface():
 
     def __init__(self, root, party=None, dimension = 10, file_path = ""):
         if (file_path == ""):
-            self.log = logParser.gameLogParser('log.txt')
+            self.log = logParser.gameLogParser('log.ck')
             self.game = gameLogic.PlayingField(dimension)
             self.human = party
             self.dimension = dimension
@@ -130,7 +158,7 @@ class Basic_Users_interface():
             self.log.dimension = int(self.log.get_dimension())
             self.dimension = self.log.dimension
             self.progress = self.log.get_progress() + 1
-            self.log.count_write = self.progress
+            self.log.count_write = self.progress + 0
             field_save = self.log.get_field()
             self.game = gameLogic.PlayingField(self.dimension, field_save)
             if self.log.get_is_human() == 'none':
@@ -139,6 +167,7 @@ class Basic_Users_interface():
             else:
                 self.human = self.log.get_is_human()
                 party = self.human
+                print(party)
         self.first_player = self.game.first_player
         self.second_player = self.game.second_player
         self.root = root
@@ -152,8 +181,12 @@ class Basic_Users_interface():
                 self.list_save_image.append(img)
                 new_line[y]['image'] = img
             self.list_button.append(new_line)
+        self.is_with_bot  = False
         if (party != None):
+            self.is_with_bot = True
+            print('in change')
             if party == 'first':
+                print('i change')
                 self.bot = bot.Bot(self.second_player)
             else:
                 self.bot = bot.Bot(self.first_player)
@@ -225,7 +258,7 @@ class GameMenu():
         back.grid(row=3, column=1, pady=10, padx=8)
 
     def loading(self):
-        open_file_path = filedialog.askopenfilename(title = "Select file")
+        open_file_path = filedialog.askopenfilename(title = "Select file", defaultextension=".ck", filetypes=(('ck files','*.ck'),("all files","*.*")))
         if len(open_file_path) != 0:
             self.clear_form(self.root)
             basic_game = Basic_Users_interface(self.root, file_path=open_file_path)

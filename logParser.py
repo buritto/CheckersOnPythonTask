@@ -2,6 +2,10 @@ import GUI
 import gameLogic
 import shutil
 from tkinter import filedialog
+import sys
+
+
+import fileinput
 
 
 class gameLogParser:
@@ -17,14 +21,24 @@ class gameLogParser:
         self.file.close()
 
     def save_file(self):
-        file = filedialog.asksaveasfile(mode='w')
-        return_data = open('log.txt', 'r')
+        file = filedialog.asksaveasfile(mode='w', defaultextension='.ck', filetypes=(('ck files','*.ck'),("all files","*.*")))
+        return_data = open('log.ck', 'r')
         try:
             file.write(return_data.read())
             return_data.close()
             file.close()
         except AttributeError:
             return
+
+    def save_change_party(self, party):
+        #self.file = open('log.ck', 'a')
+        for line in fileinput.input('log.ck', inplace=1):
+            if line.find("human") != -1:
+                line = line.replace(line, 'human:' + party + '\n')
+            sys.stdout.write(line)
+
+
+        self.file.close()
 
     def change_fild_text(self, dimension, field):
         filed_in_str = ""
@@ -33,19 +47,23 @@ class gameLogParser:
                 symbol = '0'
                 if type(field[i][j]) == gameLogic.Chip:
                     if field[i][j].party == 'white':
-                        symbol = '1'
+                        symbol = 1
+                        if field[i][j].unusual_checker:
+                            symbol = 3
                     else:
-                        symbol = '2'
-                filed_in_str += symbol
+                        symbol = 2
+                        if field[i][j].unusual_checker:
+                            symbol = 4
+                filed_in_str += str(symbol)
             filed_in_str += '\n'
-        self.file = open('log.txt', 'a')
+        self.file = open('log.ck', 'a')
         self.file.write('relise:' + str(self.count_write)+'\n')
         self.file.write(filed_in_str)
         self.count_write += 1
         self.file.close()
 
     def create_struct_log(self, party, dimension, progress):
-        self.file = open('log.txt', 'w')
+        self.file = open('log.ck', 'w')
         self.dimension = dimension
         mode = "coop"
         human_party = 'none'
@@ -101,7 +119,7 @@ class gameLogParser:
 
 
 if __name__=="__main__":
-    lp = gameLogParser('log.txt')
+    lp = gameLogParser('log.ck')
     lp.create_struct_log('red',10)
     print(lp.get_field())
     print(lp.get_is_human())
