@@ -12,7 +12,6 @@ class gameLogParser:
 
     def __init__(self, log_name):
         self.log_name = log_name
-        print('log_name', log_name)
         self.file = None
         self.count_write = 1
         self.dimension = 0
@@ -50,8 +49,12 @@ class gameLogParser:
                         symbol = 1
                         if field[i][j].unusual_checker:
                             symbol = 3
+                        if field[i][j].is_king:
+                            symbol = 5
                     else:
                         symbol = 2
+                        if field[i][j].is_king:
+                            symbol = 6
                         if field[i][j].unusual_checker:
                             symbol = 4
                 filed_in_str += str(symbol)

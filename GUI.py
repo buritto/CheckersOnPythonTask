@@ -52,30 +52,28 @@ class Basic_Users_interface():
             messagebox.showerror('Error', 'Your move is not completed ')
             return
 
-
     def change_parties(self, player):
         if player.active_chip.unusual_checker:
             if player.active_chip.count > 0:
                 player.active_chip.count -= 1
             else:
-                 messagebox.showinfo("New message", 'Change party !!!!!!')
-                 player.active_chip.count = 5
-                 if self.is_with_bot:
-                     save_party = self.game.second_player
-                     if self.human == 'white':
-                         save_party = self.game.first_player
-                         self.game.first_player = self.bot.player
-                         self.bot.player = save_party
-                         self.log.save_change_party('second')
-                         return
-                     save_party = self.game.second_player
-                     self.game.second_player = self.bot.player
-                     self.bot.player = save_party
-                     self.log.save_change_party('first')
-                     return
-                 new_party = self.game.second_player
-                 self.game.second_player = self.game.first_player
-                 self.game.first_player = new_party
+                messagebox.showinfo("New message", 'Change party !!!!!!')
+                player.active_chip.count = 5
+                if self.is_with_bot:
+                    save_party = self.game.second_player
+                    if self.human == 'first':
+                        save_party = self.game.first_player
+                        self.game.first_player = self.bot.player
+                        self.bot.player = save_party
+                        self.log.save_change_party('second')
+                        return
+                    self.game.second_player = self.bot.player
+                    self.bot.player = save_party
+                    self.log.save_change_party('first')
+                    return
+                new_party = self.game.second_player
+                self.game.second_player = self.game.first_player
+                self.game.first_player = new_party
 
 
     def make_jump(self, x, y):
@@ -108,6 +106,10 @@ class Basic_Users_interface():
             return
 
         if result_jump != 0 and self.human != None and self.bot.bot_mode == True:
+            if self.check_winner():
+                self.root.destroy()
+                main()
+                return
             self.progress += self.bot.bot_do()
             self.change_parties(self.bot.player)
             self.log.change_fild_text(self.dimension, self.game.field)
@@ -167,7 +169,6 @@ class Basic_Users_interface():
             else:
                 self.human = self.log.get_is_human()
                 party = self.human
-                print(party)
         self.first_player = self.game.first_player
         self.second_player = self.game.second_player
         self.root = root
@@ -182,11 +183,9 @@ class Basic_Users_interface():
                 new_line[y]['image'] = img
             self.list_button.append(new_line)
         self.is_with_bot  = False
-        if (party != None):
+        if party != None :
             self.is_with_bot = True
-            print('in change')
             if party == 'first':
-                print('i change')
                 self.bot = bot.Bot(self.second_player)
             else:
                 self.bot = bot.Bot(self.first_player)
@@ -228,6 +227,11 @@ class GameMenu():
             basic_game = Basic_Users_interface(root, party)
         else:
             try:
+                if int(dimension) < 5 or  int(dimension) % 2 == 1:
+                    messagebox.showerror('Error dimension', 'Incorrect dimension: dimension should be more 4 and be even ')
+                    self.clear_form(self.root)
+                    self.draw_menu(self.root)
+                    return 
                 self.clear_form(root)
                 basic_game = Basic_Users_interface(root, party, int(dimension))
             except ValueError:

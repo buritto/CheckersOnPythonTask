@@ -61,7 +61,6 @@ class Player():
 
     def check_place(self, chip, list_step):
         delta = 1
-
         if chip.is_king:
             for step in list_step:
                 for x in range(-step, step):
@@ -69,6 +68,9 @@ class Player():
                         if abs(x) == abs(y) and x != 0 and self.is_correctness_coord(x + chip.pos_x, y + chip.pos_y) \
                                 and self.field[x + chip.pos_x][y + chip.pos_y] == 0:
                             self.active_chip_list_move.append([x + chip.pos_x, y + chip.pos_y])
+                        else:
+                            x = step
+                            y = step + 1
             return
 
         if chip.party == 'black':
@@ -121,6 +123,7 @@ class Player():
                     if enemy_neighborhood == 0:
                         if self.check_path(chip, chip.pos_x + x, chip.pos_y + y):
                             chip.chips_for_fight[(chip.pos_x + x + x // abs(x), chip.pos_y + y + y // abs(y))] = enemy
+
 
     def check_chips_for_fight(self, chip, list_step):
         for step in list_step:
@@ -231,28 +234,52 @@ class PlayingField():
         self.second_player = Player('black', self.field)
         for x in range(0, dimension):
             for y in range(0, dimension):
-                #is_unusual = False
-                #if random.randint(1, 10000) % 5 == 0:
-                    #is_unusual = True
-                if field[x][y] == '1' or field[x][y] == '3':
+                if field[x][y] == '1' or field[x][y] == '3' or field[x][y] == '5':
                     is_unusual = False
                     if field[x][y] == '1':
                         is_unusual = True
                     new_chip = Chip(x, y, 'black', self.first_player, is_unusual)
+                    if field[x][y] == '5':
+                        new_chip.is_king = True
                     self.field[x][y] = new_chip
                     self.first_player.player_chips.append(new_chip)
-                if field[x][y] == '2' or field[x][y] == '4':
+                if field[x][y] == '2' or field[x][y] == '4' or field[x][y] == '6':
                     is_unusual = False
                     if field[x][y] == '4':
                         is_unusual = True
                     new_chip = Chip(x, y, 'white', self.second_player, is_unusual)
+                    if field[x][y] == '6':
+                        new_chip.is_king = True
                     self.field[x][y] = new_chip
                     self.second_player.player_chips.append(new_chip)
 
+    def analyze_locks(self, player):
+        free_chips = 0
+        delta = -1
+        if player.party == "white":
+            delta = 1
+        for chip in player.player_chips:
+            for y in range(-1, 2, 2):
+                if chip.is_king:
+                    for step in player.big_list_step:
+                        if player.is_correctness_coord(chip.pos_x + step * y, chip.pos_y +step * y):
+                            if type(self.field[chip.pos_x + step * y][chip.pos_y + step * y]) == int:
+                                free_chips += 1
+                else:
+                    if player.is_correctness_coord(chip.pos_x + delta,chip.pos_y + y):
+                        if type(self.field[chip.pos_x + delta][chip.pos_y + y]) == int:
+                            free_chips+=1
+                    if player.is_correctness_coord(chip.pos_x + delta * 2,chip.pos_y + y * 2):
+                        if type(self.field[chip.pos_x + delta * 2][chip.pos_y + y * 2]) == int:
+                            free_chips+=1
+        return free_chips
+
+
+
     def initialize_win(self):
-        if len(self.first_player.player_chips) == 0:
+        if len(self.first_player.player_chips) == 0 or self.analyze_locks(self.first_player) == 0:
             return 'second'
-        if len(self.second_player.player_chips) == 0:
+        if len(self.second_player.player_chips) == 0 or self.analyze_locks(self.second_player) == 0:
             return 'first'
 
 
